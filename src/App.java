@@ -1,24 +1,22 @@
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class App {
-    public static void main(String[] args) throws InterruptedException, IOException {
+    public static void main(String[] args) throws Exception {
         int opcao;
-        int qtdProdutos = 0;
         Scanner scanner = new Scanner(System.in);
-        List<Produto> produtos = new ArrayList<Produto>();
-        
+        List<Cliente> clientes = new ArrayList<>(); 
+        List<Pagamento> pagamentos = new ArrayList<>();     
 
         do {
             System.out.println("\n****\nMENU\n****\n");
-            System.out.println("1 - Incluir produto");
-            System.out.println("2 - Consultar produto");
-            System.out.println("3 - Listagem de produtos");
-            System.out.println("4 - Vendas por período - detalhado");
-            System.out.println("5 - Realizar venda");
+            System.out.println("1 - Cadastro de cliente");
+            System.out.println("2 - Listar clientes");
+            System.out.println("3 - Consulta CPF");
+            System.out.println("4 - Cadastrar pagamento");
+            System.out.println("5 - Listar pagamentos");
             System.out.println("0 - Sair");
             System.out.print("Opção: ");
 
@@ -26,65 +24,106 @@ public class App {
             scanner.nextLine();
 
         if (opcao == 1) {
-                
-            
-            Produto produto = new Produto();
-                
-            System.out.println("Código: ");
-            produto.setCodigo(scanner.next());
-            System.out.println("Nome: ");
-            produto.setNome(scanner.next());
-            System.out.println("Valor: ");
-            produto.setValor(scanner.nextDouble());
-            System.out.println("Estoque: ");
-            produto.setEstoque(scanner.nextInt());
+            try{
+                System.out.println("Informe o código do cliente: ");
+                String codigo = scanner.nextLine();
+                System.out.println("Informe o cpf do cliente: ");   
+                String cpf = scanner.nextLine();
+                System.out.println("Informe o nome do cliente: ");
+                String nome = scanner.nextLine();
 
-            produtos.add(qtdProdutos, produto);
+                for (Cliente cliente : clientes) {
+                    if (cliente.getCodigo().equals(codigo)) {
+                        throw new Exception("Código já cadastrado");
+                    }
+                    if (cliente.getCpf().equals(cpf)) {
+                        throw new Exception("CPF já cadastrado");
+                    }
+                }
 
-            qtdProdutos++;
+                Cliente cl = new Cliente(codigo, cpf, nome);
+                clientes.add(cl);
+
+                voltarMenu(scanner);
+            }catch(Exception ex){
+                System.out.println(ex.getMessage());
+                //scanner.nextLine();
+                voltarMenu(scanner);
+            }
+        } else if (opcao == 2) {
+            if (clientes.isEmpty()) {
+                System.out.println("Não há clientes cadastrados.");
+            }else{
+                clientes.sort(new ComparadorNome());
+                System.out.println("Clientes cadastrados:");
+                for (Cliente cliente : clientes) {
+                 System.out.printf("Nome: %s - CPF: %s - Código: %s \n", cliente.getNome(), cliente.getCpf(), cliente.getCodigo());   
+                }
+            }
 
             voltarMenu(scanner);
-        } else if (opcao == 2) {
-                
-                System.out.print("Digite o código do produto que você procura: \n");
-                String buscaProduto = scanner.nextLine();
-    
-                for (Produto p : produtos) {
-
-                if (buscaProduto.equals(p.getCodigo())) {
-                System.out.println("\nProduto correspondente: ");
-                System.out.println(p.getNome());
-                
-                }
-            }              
-                voltarMenu(scanner);
         } else if (opcao == 3) {
-                if (produtos.isEmpty() == true) {
+            boolean verificar = false;
+            if (clientes.isEmpty()) {
+                System.out.println("Não há clientes cadastrados.");
+            }else{
+                System.out.println("Informe o CPF que busca: ");   
+                String cpf = scanner.nextLine();
 
-                    System.err.println("Não existem produtos cadastrados.");
+                for (Cliente cliente : clientes) {
+                  if (cliente.getCpf().equals(cpf)) {
+                    System.out.println("Cliente encontrado:");
+                    System.out.printf("Nome: %s - CPF: %s - Código: %s \n", cliente.getNome(), cliente.getCpf(), cliente.getCodigo());
+                    verificar = true;
+                  }
+                }
+            if (!verificar) {
+                    System.out.println("Nenhum cliente encontrado");
+            }
+            }
 
-                }else{
-                    System.out.println( "Produtos e seus dados:\n============================");                
-                
-                    for (Produto p2 : produtos) {
 
-                    System.out.println(p2 + "\n");
-
-                    }
-                    System.out.println("=========================\n");
-                }  
-
-                voltarMenu(scanner);
+            voltarMenu(scanner);
         }else if (opcao == 4) {
+            if (clientes.isEmpty()) {
+                System.out.println("Não há clientes cadastrados");
+            }else{
+                System.out.println("Informe o valor: ");
+                double valor = scanner.nextDouble();
+                scanner.nextLine();
+                System.out.println("Código do cliente: ");
+                String codigo = scanner.nextLine(); 
                 
-                
-                
-                voltarMenu(scanner);
+                Cliente cl = null;
+                boolean verificar = false;
+                for (Cliente cliente : clientes) {
+                   if (cliente.getCodigo().equals(codigo)) {
+                      cl = cliente; 
+                      verificar = true; 
+                   } 
+                }
+                if (!verificar) {
+                    System.out.println("Nenhum cliente encontrado");
+                }else{
+                Pagamento pg = new Pagamento(valor, cl);
+                pagamentos.add(pg);
+                }
+            }    
+            voltarMenu(scanner);
         }else if (opcao == 5) {
+            if (pagamentos.isEmpty()) {
+                System.out.println("Não existem pagamentos cadastrados");
+            }else{
+                pagamentos.sort(new ComparadorValor());
+                System.out.println("Pagamentos cadastrados:");
+                for (Pagamento pagamento : pagamentos) {
+                   System.out.printf("Valor: %f - Nome: %s \n", pagamento.getValor() , pagamento.getCl().getNome()); 
+                }
+            }
+
                 
                 
-                
-                voltarMenu(scanner);
+            voltarMenu(scanner);
             }
         else if (opcao != 0) {
             System.out.println("\nOpção inválida!");
